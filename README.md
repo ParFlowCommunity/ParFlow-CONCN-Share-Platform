@@ -1,20 +1,14 @@
 # ParFlow CONCN Share Platform
 
-面向中国大陆尺度 ParFlow-CONCN 模型的流域数据共享与裁切平台。通过网页浏览和检索流域，按授权生成并下载输入数据；也可独立使用 Python 工具执行科学裁切。
-
 [快速开始](#快速开始) · [科学裁切](docs/科学裁切工具说明.md) · [部署指南](docs/部署说明-v1.0.md) · [文档目录](docs/README.md)
-
-## 模型与数据
 
 **本平台用于共享中国大陆尺度ParFlow-CONCN模型。**
 
-ParFlow-CONCN 1.0模型是约1公里水平分辨率，纵深492m的地表水-地下水集成水文模型。
+ParFlow-CONCN 1.0模型是约1公里水平分辨率，纵深492m的地表水-地下水集成水文模型。1.1版本正在建设中，可与CLM或CoLM耦合运行，用于探究地下水与陆面过程的双向交互作用。
 
-当前完整下载包包含五类 PFB（slopex、slopey、bedrock、manning、subsurface）、两种掩膜、PFSOL、VTK 和元信息，共 10 个文件；不包含初始压力场、气象强迫或完整 ParFlow 模拟配置。
+用户可通过本平台裁剪用于目标流域ParFlow模拟的所有基础输入文件，如：流域mask文件、初始压力场分布、水平x、y方向坡度文件、manning粗糙系数、含水介质水力参数、基岩深度、用于不规则流域模拟的solid文件等。
 
-## 引用
-
-若使用本工具及生成文件开展研究，请引用：
+**若使用本工具及生成文件开展研究，请引用：**
 
 Yang C, Jia ZT, Xu WJ, Wei ZW, Zhang XL, Zou YG, Mcdonnell JJ, Condon LE, Dai YJ, Maxwell RM, 2025. CONCN: a high-resolution, integrated surface water-groundwater ParFlow modeling platform of continental China. Hydrology and Earth System Sciences, 29(9): 2201-2218.
 
@@ -115,11 +109,7 @@ bash scripts/run-linux.sh worker
 
 网站默认本机入口为 http://127.0.0.1:8000，实际监听与访问地址由配置决定。使用 `bash scripts/run-linux.sh check` 检查健康状态。后台运行、停止、HTTPS、邮件和网络访问见 [部署指南](docs/部署说明-v1.0.md)。
 
-## 下载包
 
-网站生成的 ZIP 以流域编号为内部目录，包含五个裁切 PFB、mask.tif、mask.pfb、PFSOL、VTK 和 metadata.json，共 10 个文件。实际文件名带有流域编号，规范见 [下载包内容](docs/下载包内容与文字维护.md)。
-
-数据库记录业务信息和文件索引，科学源数据和 ZIP 保存在文件系统。迁移网站时需要分别交付源码、数据库和必要数据文件。
 
 ## 项目结构
 
@@ -152,10 +142,8 @@ bash scripts/run-linux.sh worker
 
 ## 问题反馈与贡献
 
-欢迎通过仓库 Issues 反馈问题，通过 Pull Request 提交修复或文档改进。报告问题时提供复现步骤、运行环境和脱敏错误信息，不附账号密码、密钥或用户业务数据。涉及接口、科学输出或部署方式的修改，应同步更新对应文档并执行相关测试。
+欢迎通过仓库 Issues 反馈问题，通过 Pull Request 提交修复或文档改进。
 
-## 来源与使用许可
+## 来源
 
 项目仓库：[ParFlowCommunity/ParFlow-CONCN-Share-Platform](https://github.com/ParFlowCommunity/ParFlow-CONCN-Share-Platform)。底层模型与工具参见 [ParFlow](https://github.com/parflow/parflow)。
-
-使用本项目时保留相关作者和来源声明。源码与科学数据的授权范围需分别确认；文献引用不替代许可，依赖库和外部地图服务遵循各自条款。
