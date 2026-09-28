@@ -81,9 +81,9 @@ def generate_domain_files(mask_pfb_path, vtk_path, pfsol_path, output_dir, confi
     _require_file(config.pfmask_cmd, "pfmask-to-pfsol 可执行文件")
     cmd = [
         str(config.pfmask_cmd),
-        "--mask", str(mask_pfb_path),
-        "--vtk", str(vtk_path),
-        "--pfsol", str(pfsol_path),
+        "--mask", os.path.relpath(mask_pfb_path, output_dir),
+        "--vtk", os.path.relpath(vtk_path, output_dir),
+        "--pfsol", os.path.relpath(pfsol_path, output_dir),
         "--bottom-patch-label", str(config.bottom_patch_label),
         "--side-patch-label", str(config.side_patch_label),
         "--z-top", str(config.z_top),

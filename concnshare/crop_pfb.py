@@ -14,7 +14,7 @@ def crop_pfb(
 ):
     import numpy as np
     import rasterio
-    from parflow.tools.io import read_pfb, write_pfb
+    from parflow.tools.io import ParflowBinaryReader, write_pfb
 
     def log(msg):
         if verbose:
@@ -32,25 +32,17 @@ def crop_pfb(
         mask = src.read(1)
         mask = (mask > 0).astype(np.uint8)
     if mask.shape != (height, width):
-        log(f"警告：掩膜实际尺寸 {mask.shape} 与 JSON 不一致，将以掩膜为准")
-        height, width = mask.shape
+        raise ValueError("掩膜尺寸与位置记录不一致")
 
-    log(f"读取 PFB: {pfb_path}")
-    pfb = read_pfb(pfb_path)      # (Z, Y_nat, X_nat), Y 从南到北
-    z, ny, nx = pfb.shape
-    log(f"PFB 原始形状: {pfb.shape}")
-
-    pfb_flipped = np.flip(pfb, axis=1)   # 现在 Y 从北到南
-
-    if row_min + height > pfb_flipped.shape[1] or col_min + width > pfb_flipped.shape[2]:
-        raise ValueError("裁剪区域超出 PFB 范围")
-    pfb_cropped = pfb_flipped[:, row_min:row_min+height, col_min:col_min+width]
-    log(f"裁剪后子区域形状: {pfb_cropped.shape}")
-
-    mask_3d = mask[np.newaxis, :, :]   # (1, H, W)
-    pfb_masked = pfb_cropped * mask_3d
-
-    pfb_result = np.flip(pfb_masked, axis=1)
+    log(f"读取 PFB 窗口: {pfb_path}")
+    with ParflowBinaryReader(pfb_path) as reader:
+        ny, nx = reader.header["ny"], reader.header["nx"]
+        if min(row_min, col_min) < 0 or row_min + height > ny or col_min + width > nx:
+            raise ValueError("裁剪区域超出 PFB 范围")
+        # TIFF is north-to-south; PFB stores y south-to-north.
+        pfb_cropped = reader.read_subarray(col_min, ny - row_min - height, 0,
+                                          width, height, reader.header["nz"])
+    pfb_result = np.where(mask[np.newaxis, ::-1, :] > 0, pfb_cropped, 0.0)
 
     # 确保输出为 float64
     pfb_result = pfb_result.astype(np.float64, copy=False)

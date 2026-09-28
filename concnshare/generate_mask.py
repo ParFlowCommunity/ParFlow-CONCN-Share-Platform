@@ -48,45 +48,30 @@ def generate_mask(shp_path, code, field, tif_path, out_mask_path, out_json_path,
         gdf_geom = gpd.GeoDataFrame(geometry=[geom], crs=shp_crs)
         geom_proj = gdf_geom.to_crs(src.crs).geometry.iloc[0]
 
-        # 计算扩展后的地理边界
-        xmin, ymin, xmax, ymax = geom_proj.bounds
-        px_w = abs(src.transform.a)
-        px_h = abs(src.transform.e)
-        new_xmin = xmin - expand * px_w
-        new_xmax = xmax + expand * px_w
-        new_ymin = ymin - expand * px_h
-        new_ymax = ymax + expand * px_h
-
-        # 计算输出栅格尺寸和仿射变换
-        width = int(round((new_xmax - new_xmin) / px_w))
-        height = int(round((new_ymax - new_ymin) / px_h))
-        out_transform = rasterio.Affine(px_w, 0.0, new_xmin, 0.0, -px_h, new_ymax)
-
-        # 生成二值掩膜（True=内部）
-        mask_bool = features.geometry_mask(
-            [geom_proj], out_shape=(height, width),
-            transform=out_transform, invert=False, all_touched=False
-        )
-        # 内部0，外部1（与常见相反，但后续裁剪程序会适配）
-        mask_uint8 = np.where(mask_bool, 0, 1).astype(np.uint8)
-
-        # 写入掩膜 TIF
-        profile = src.profile
-        profile.update({
-            "driver": "GTiff", "height": height, "width": width,
-            "transform": out_transform, "dtype": rasterio.uint8,
-            "count": 1, "compress": "lzw", "nodata": None
-        })
+        # Snap to integer source pixels so the TIFF mask and PFB agree.
+        if src.transform.b or src.transform.d or src.transform.a <= 0 or src.transform.e >= 0:
+            raise ValueError("模板必须是北向上的规则网格")
+        if not isinstance(expand, int) or expand < 0:
+            raise ValueError("expand 必须是非负整数")
+        from rasterio.features import geometry_window
+        from rasterio.windows import Window
+        window = geometry_window(src, [geom_proj], pad_x=expand, pad_y=expand)
+        col_min, row_min = int(window.col_off), int(window.row_off)
+        width, height = int(window.width), int(window.height)
+        out_transform = src.window_transform(Window(col_min, row_min, width, height))
+        mask_uint8 = features.geometry_mask(
+            [geom_proj], out_shape=(height, width), transform=out_transform,
+            invert=True, all_touched=False,
+        ).astype(np.uint8)
+        if not mask_uint8.any():
+            raise ValueError("该流域在当前分辨率下没有有效像元")
+        profile = src.profile.copy()
+        profile.update(driver="GTiff", height=height, width=width,
+                       transform=out_transform, dtype=rasterio.uint8,
+                       count=1, compress="lzw", nodata=None)
         with rasterio.open(out_mask_path, "w", **profile) as dst:
             dst.write(mask_uint8, 1)
         log(f"掩膜已保存: {out_mask_path}")
-
-        # 计算掩膜矩形在原始 TIF 中的行列偏移
-        col_min, row_min = ~src.transform * (new_xmin, new_ymax)
-        col_min = int(round(col_min))
-        row_min = int(round(row_min))
-        if col_min < 0 or row_min < 0:
-            raise ValueError("掩膜矩形超出模板 TIF 范围，请减小 --expand 或检查几何范围")
 
         pos_info = {
             "row_min": row_min,
