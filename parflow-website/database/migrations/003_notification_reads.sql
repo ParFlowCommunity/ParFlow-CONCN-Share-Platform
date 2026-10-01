@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS notification_reads (
+  user_id BIGINT UNSIGNED NOT NULL,
+  event_key VARCHAR(80) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  read_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (user_id,event_key),
+  CONSTRAINT fk_notice_reader FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
