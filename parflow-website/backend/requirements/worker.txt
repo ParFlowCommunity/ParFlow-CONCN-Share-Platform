@@ -1,0 +1,5 @@
+-r web.txt
+geopandas>=1,<2
+rasterio>=1.4,<2
+numpy>=2,<3
+pftools

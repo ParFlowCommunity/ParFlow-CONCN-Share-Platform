@@ -1,56 +1,69 @@
-  # Logs
-  logs
-  *.log
-  npm-debug.log*
-  yarn-debug.log*
-  yarn-error.log*
-  pnpm-debug.log*
-  lerna-debug.log*
+# Local configuration and credentials
+.env
+.env.*
+*.env
+!.env.example
+*.pem
+*.key
+.secrets
 
-  node_modules
-  .DS_Store
-  dist
-  dist-ssr
-  coverage
-  *.local
+# Dependencies and generated build files
+.venv/
+venv/
+env/
+node_modules/
+dist/
+build/
+*.egg-info/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.cache/
+coverage/
+.coverage*
+htmlcov/
 
-  # Editor directories and files
-  .vscode/*
-  !.vscode/extensions.json
-  .idea
-  *.suo
-  *.ntvs*
-  *.njsproj
-  *.sln
-  *.sw?
-
-  *.tsbuildinfo
-
-  .eslintcache
-
-  # Cypress
-  /cypress/videos/
-  /cypress/screenshots/
-
-  # Vitest
-  __screenshots__/
-
-  # Vite
-  *.timestamp-*-*.mjs
-
-  # Python
-  venv/
-  __pycache__/
-  *.pyc
-  backend/instance/
-
-  # Secrets
-  .env
-# 运行时/本地数据（不提交）
+# Local tools, runtime state and reports
+.local/
+*.log
+tmp/
+temp/
+outputs/
+backend/jobs/
 backend/boundary_cache/
 backend/uploads/
-backend/jobs/
-backend/instance/backups/
-backup_*/
-.claude/
-_server*.json
+backend/instance/
+
+# Scientific source data, generated packages and database copies
+parflow-data/
+*.pfb
+*.tif
+*.tiff
+*.shp
+*.shx
+*.dbf
+*.prj
+*.sbn
+*.sbx
+*.cpg
+*.vtk
+*.pfsol
+*.nc
+*.zip
+*.7z
+*.tar
+*.gz
+*.sqlite
+*.sqlite3
+*.db
+*.sql.gz
+# Keep database schema SQL, source JSON and website images tracked.
+
+# Editor / operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
